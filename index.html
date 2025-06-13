@@ -63,6 +63,20 @@
       height: auto;
       object-fit: contain;
     }
+
+    #info {
+      margin-bottom: 20px;
+    }
+
+    #query-understanding {
+      font-size: 12px;
+      white-space: normal;
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      max-height: 300px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
@@ -73,6 +87,10 @@
     <div id="sliders"></div>
   </div>
   <div class="main">
+    <div id="info">
+      <strong id="total-results">Carregando...</strong>
+      <div id="query-understanding"></div>
+    </div>
     <div class="results" id="results"></div>
   </div>
 
@@ -127,12 +145,67 @@
       fetchResults();
     });
 
+    // Função recursiva para encontrar todos os arrays 'boost' dentro de um objeto
+    function findAllBoosts(obj) {
+      let results = [];
+
+      function recurse(o) {
+        if (o && typeof o === 'object') {
+          for (const key in o) {
+            if (key === 'boost' && Array.isArray(o[key])) {
+              results.push(o[key]);
+            } else if (typeof o[key] === 'object') {
+              recurse(o[key]);
+            }
+          }
+        }
+      }
+
+      recurse(obj);
+      return results;
+    }
+
     function fetchResults() {
       const query = encodeURIComponent(queryInput.value);
 
+      // Aqui o ajuste que faz o searchConfig respeitar o formato esperado, mantendo boosts dentro de "properties"
       const searchConfigObject = {
+        psEnable: true,
+        psdItem: 25,
+        psdMinS: 0,
+        psdMaxS: 0.6,
+        pBal: 0.7,
+        enableMetrics: true,
+        synonymWeight: 0.5,
+        ngramSearch: false,
+        searchAttributeBoosts: [
+          "marketplace:false^10.0",
+          "seller_id:RCHLO^7.0",
+          "business_name:Lojas Riachuelo S.A.^5.0",
+          "min_grade_60:true^5.0"
+        ],
+        searchAttributeFilters: ["in_stock:true"],
+        emw: 1,
+        tie: 0.3,
+        mm: "3<50%",
+        vbp: 2.1,
+        pbp: 2.1,
+        languages: ["pt"],
+        placements: ["preview", "rr1", "discover", "find"],
+        wisdomOfCrowd: {
+          enabled: true,
+          fieldPrefix: "wocprod",
+          disbleForStarQuery: false
+        },
+        timing: false,
+        businessRule: { enabled: true },
+        globalRank: { globalRankFields: { nameSpace: "global_rank_prod_v2" } },
         queryUnderstanding: {
           tagging: {
+            queryEnabled: true,
+            querytagField: "querytag_name",
+            querytagPropertyField: "attribute",
+            reformulateQuery: false,
             querytagSettings: {
               product: {
                 properties: Object.fromEntries(
@@ -141,17 +214,67 @@
               }
             }
           }
+        },
+        additiveBoost: {
+          enable: true,
+          settings: {
+            weightedUER: {
+              field: "global_rank_prod_v2$uer_30",
+              factor: "1"
+            }
+          }
         }
       };
 
       const searchConfig = encodeURIComponent(JSON.stringify(searchConfigObject));
 
-      const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/e20fd45b1e19a8c6?query=${query}&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore&log=false&filter=%7B%21tag%3Din_stock%7Din_stock%3Atrue&facetDepth=6&userId=13930081&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q&ssl=true&facet=false&searchConfig=${searchConfig}&sessionId=abc123`;
+      const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/e20fd45b1e19a8c6?query=${query}` +
+        `&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore` +
+        `&log=false&filter=%7B%21tag%3Din_stock%7Din_stock%3Atrue&facetDepth=6` +
+        `&userId=13930081` +
+        `&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q` +
+        `&ssl=true&facet=false&searchConfig=${searchConfig}` +
+        `&sessionId=abc123`;
 
       fetch(url)
         .then(response => response.json())
         .then(data => {
-          const docs = data.placements?.[0]?.docs || [];
+          const placement = data.placements?.[0] ?? {};
+          const docs = placement.docs || [];
+          const numFound = placement.numFound ?? 0;
+          const queryUnderstanding = placement.queryUnderstanding ?? {};
+
+          document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
+
+          // Busca todos os arrays boost
+          const allBoostsArrays = findAllBoosts(queryUnderstanding);
+
+          let quHtml = '';
+
+          if (queryUnderstanding.queryUnderstandingStage) {
+            quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
+          }
+
+          if (allBoostsArrays.length > 0) {
+            allBoostsArrays.forEach((boostArr, idx) => {
+              quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
+              boostArr.forEach(b => {
+                quHtml += `<li>${b}</li>`;
+              });
+              quHtml += '</ul>';
+            });
+          } else {
+            quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
+          }
+
+          if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
+            quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
+          } else {
+            quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
+          }
+
+          document.getElementById("query-understanding").innerHTML = quHtml;
+
           if (docs.length === 0) {
             resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
             return;
