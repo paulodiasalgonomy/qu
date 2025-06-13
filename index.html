@@ -84,8 +84,27 @@
     <label>Buscar por:
       <input type="text" id="queryInput" value="blusa" />
     </label>
-    <div id="sliders"></div>
+
+    <fieldset style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+      <legend><strong>Query Understanding</strong></legend>
+
+      <div style="margin-bottom: 10px;">
+        <label>
+          <input type="checkbox" id="toggleQueryEnabled" checked />
+          queryEnabled
+        </label>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>
+          <input type="checkbox" id="toggleReformulateQuery" checked />
+          reformulateQuery
+        </label>
+      </div>
+
+      <div id="sliders"></div>
+    </fieldset>
   </div>
+
   <div class="main">
     <div id="info">
       <strong id="total-results">Carregando...</strong>
@@ -113,6 +132,9 @@
       ocasion: 2,
     };
 
+    let reformulateQuery = true;
+    let queryEnabled = true;
+
     const slidersContainer = document.getElementById("sliders");
     const queryInput = document.getElementById("queryInput");
     const resultsContainer = document.getElementById("results");
@@ -139,13 +161,22 @@
           fetchResults();
         });
       });
+
+      document.getElementById("toggleReformulateQuery").addEventListener("change", e => {
+        reformulateQuery = e.target.checked;
+        fetchResults();
+      });
+
+      document.getElementById("toggleQueryEnabled").addEventListener("change", e => {
+        queryEnabled = e.target.checked;
+        fetchResults();
+      });
     }
 
     queryInput.addEventListener("input", () => {
       fetchResults();
     });
 
-    // Função recursiva para encontrar todos os arrays 'boost' dentro de um objeto
     function findAllBoosts(obj) {
       let results = [];
 
@@ -168,7 +199,6 @@
     function fetchResults() {
       const query = encodeURIComponent(queryInput.value);
 
-      // Aqui o ajuste que faz o searchConfig respeitar o formato esperado, mantendo boosts dentro de "properties"
       const searchConfigObject = {
         psEnable: true,
         psdItem: 25,
@@ -202,10 +232,10 @@
         globalRank: { globalRankFields: { nameSpace: "global_rank_prod_v2" } },
         queryUnderstanding: {
           tagging: {
-            queryEnabled: true,
+            queryEnabled: queryEnabled,
             querytagField: "querytag_name",
             querytagPropertyField: "attribute",
-            reformulateQuery: true,
+            reformulateQuery: reformulateQuery,
             querytagSettings: {
               product: {
                 properties: Object.fromEntries(
@@ -246,7 +276,6 @@
 
           document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
 
-          // Busca todos os arrays boost
           const allBoostsArrays = findAllBoosts(queryUnderstanding);
 
           let quHtml = '';
