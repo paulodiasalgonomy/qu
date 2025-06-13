@@ -274,35 +274,39 @@
           const numFound = placement.numFound ?? 0;
           const queryUnderstanding = placement.queryUnderstanding ?? {};
 
-          document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
+document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
 
-          const allBoostsArrays = findAllBoosts(queryUnderstanding);
+const allBoostsArrays = findAllBoosts(queryUnderstanding);
 
-          let quHtml = '';
+let quHtml = '';
 
-          if (queryUnderstanding.queryUnderstandingStage) {
-            quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
-          }
+if (queryUnderstanding.queryUnderstandingStage) {
+  quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
+}
 
-          if (allBoostsArrays.length > 0) {
-            allBoostsArrays.forEach((boostArr, idx) => {
-              quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
-              boostArr.forEach(b => {
-                quHtml += `<li>${b}</li>`;
-              });
-              quHtml += '</ul>';
-            });
-          } else {
-            quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
-          }
+if (queryUnderstanding.reformulatedQuery) {
+  quHtml += `<p><strong>Reformulated Query:</strong> ${queryUnderstanding.reformulatedQuery}</p>`;
+}
 
-          if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
-            quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
-          } else {
-            quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
-          }
+if (allBoostsArrays.length > 0) {
+  allBoostsArrays.forEach((boostArr, idx) => {
+    quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
+    boostArr.forEach(b => {
+      quHtml += `<li>${b}</li>`;
+    });
+    quHtml += '</ul>';
+  });
+} else {
+  quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
+}
 
-          document.getElementById("query-understanding").innerHTML = quHtml;
+if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
+  quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
+} else {
+  quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
+}
+
+document.getElementById("query-understanding").innerHTML = quHtml;
 
           if (docs.length === 0) {
             resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
