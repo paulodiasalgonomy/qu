@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Busca Personalizada - RichRelevance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 20%;
+      padding: 20px;
+      box-sizing: border-box;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+    }
+
+    .main {
+      width: 80%;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    input[type="text"] {
+      padding: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+    }
+
+    .slider-container {
+      margin-bottom: 16px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .product {
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 200px;
+      box-sizing: border-box;
+    }
+
+    .product img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <label>Buscar por:
+      <input type="text" id="queryInput" value="blusa" />
+    </label>
+    <div id="sliders"></div>
+  </div>
+  <div class="main">
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    const boosts = {
+      catalog_subclass: 4,
+      character: 3,
+      family: 3,
+      product_brand: 3,
+      catalog_class: 3,
+      filter_color: 3,
+      gender: 3,
+      size: 3,
+      hair_type: 2,
+      lifestyle: 2,
+      main_composition: 2,
+      model: 2,
+      modeling: 2,
+      washing: 2,
+      ocasion: 2,
+    };
+
+    const slidersContainer = document.getElementById("sliders");
+    const queryInput = document.getElementById("queryInput");
+    const resultsContainer = document.getElementById("results");
+
+    function buildSliders() {
+      slidersContainer.innerHTML = '';
+      for (const [key, value] of Object.entries(boosts)) {
+        const sliderId = `slider-${key}`;
+        slidersContainer.innerHTML += `
+          <div class="slider-container">
+            <div class="slider-label">
+              <label for="${sliderId}">${key}</label>
+              <span id="value-${key}">${value}</span>
+            </div>
+            <input type="range" id="${sliderId}" min="0" max="50" step="1" value="${value}" />
+          </div>
+        `;
+      }
+
+      Object.keys(boosts).forEach(key => {
+        document.getElementById(`slider-${key}`).addEventListener("input", e => {
+          boosts[key] = parseFloat(e.target.value);
+          document.getElementById(`value-${key}`).textContent = e.target.value;
+          fetchResults();
+        });
+      });
+    }
+
+    queryInput.addEventListener("input", () => {
+      fetchResults();
+    });
+
+    function fetchResults() {
+      const query = encodeURIComponent(queryInput.value);
+
+      const searchConfigObject = {
+        queryUnderstanding: {
+          tagging: {
+            querytagSettings: {
+              product: {
+                properties: Object.fromEntries(
+                  Object.entries(boosts).map(([key, boost]) => [key, { boost }])
+                )
+              }
+            }
+          }
+        }
+      };
+
+      const searchConfig = encodeURIComponent(JSON.stringify(searchConfigObject));
+
+      const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/e20fd45b1e19a8c6?query=${query}&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore&log=false&filter=%7B%21tag%3Din_stock%7Din_stock%3Atrue&facetDepth=6&userId=13930081&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q&ssl=true&facet=false&searchConfig=${searchConfig}&sessionId=abc123`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const docs = data.placements?.[0]?.docs || [];
+          if (docs.length === 0) {
+            resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
+            return;
+          }
+
+          resultsContainer.innerHTML = docs.map(doc => `
+            <div class="product">
+              <img src="${doc.imageId}&height=300" alt="${doc.name}" />
+              <strong>${doc.name}</strong><br/>
+              <small>ID: ${doc.id}</small><br/>
+              <small>Score: ${doc.score?.toFixed(2)}</small>
+            </div>
+          `).join("");
+        })
+        .catch(error => {
+          resultsContainer.innerHTML = `<p>Erro ao buscar dados: ${error.message}</p>`;
+        });
+    }
+
+    buildSliders();
+    fetchResults();
+  </script>
+</body>
+</html>
