@@ -159,8 +159,7 @@
 
           resultsContainer.innerHTML = docs.map(doc => `
             <div class="product">
-              <img src="${doc.imageId}&height=300" alt="${doc.name}" onerror="this.style.display='none'" />
-<p><a href="${doc.imageId}" target="_blank">Ver imagem</a></p>
+              <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
               <small>ID: ${doc.id}</small><br/>
               <small>Score: ${doc.score?.toFixed(2)}</small>
