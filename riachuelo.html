@@ -307,76 +307,84 @@ function bindFormChanges(obj, prefix = '') {
     }
 
     function fetchResults() {
-      const query = encodeURIComponent(queryInput.value);
-      const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
+  const query = encodeURIComponent(queryInput.value);
+  const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
+  const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/${apiKey}?query=${query}` +
+    `&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore` +
+    `&log=false` +
+    `&userId=13930081` +
+    `&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q` +
+    `&ssl=true&facet=false&searchConfig=${searchConfig}` +
+    `&sessionId=abc123`;
 
-      const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/${apiKey}?query=${query}` +
-        `&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore` +
-        `&log=false` +
-        `&userId=13930081` +
-        `&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q` +
-        `&ssl=true&facet=false&searchConfig=${searchConfig}` +
-        `&sessionId=abc123`;
+  const startTime = performance.now(); // ⏱️ Marca o tempo inicial
 
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          const placement = data.placements?.[0] ?? {};
-          const docs = placement.docs || [];
-          const numFound = placement.numFound ?? 0;
-          const queryUnderstanding = placement.queryUnderstanding ?? {};
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const endTime = performance.now(); // ⏱️ Marca o tempo final
+      const duration = (endTime - startTime).toFixed(2); // ⏱️ Em milissegundos
 
-          document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
+      const placement = data.placements?.[0] ?? {};
+      const docs = placement.docs || [];
+      const numFound = placement.numFound ?? 0;
+      const queryUnderstanding = placement.queryUnderstanding ?? {};
 
-          const allBoostsArrays = findAllBoosts(queryUnderstanding);
-          let quHtml = '';
+      document.getElementById("total-results").textContent =
+        `Produtos encontrados: ${numFound} (em ${duration} ms)`;
 
-          if (queryUnderstanding.queryUnderstandingStage) {
-            quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
-          }
+      // ... [restante do código permanece o mesmo]
 
-          if (queryUnderstanding.reformulatedQuery) {
-            quHtml += `<p><strong>Reformulated Query:</strong> ${queryUnderstanding.reformulatedQuery}</p>`;
-          }
+      const allBoostsArrays = findAllBoosts(queryUnderstanding);
+      let quHtml = '';
 
-          if (allBoostsArrays.length > 0) {
-            allBoostsArrays.forEach((boostArr, idx) => {
-              quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
-              boostArr.forEach(b => {
-                quHtml += `<li>${b}</li>`;
-              });
-              quHtml += '</ul>';
-            });
-          } else {
-            quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
-          }
+      if (queryUnderstanding.queryUnderstandingStage) {
+        quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
+      }
 
-          if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
-            quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
-          } else {
-            quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
-          }
+      if (queryUnderstanding.reformulatedQuery) {
+        quHtml += `<p><strong>Reformulated Query:</strong> ${queryUnderstanding.reformulatedQuery}</p>`;
+      }
 
-          document.getElementById("query-understanding").innerHTML = quHtml;
-
-          if (docs.length === 0) {
-            resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
-            return;
-          }
-
-          resultsContainer.innerHTML = docs.map(doc => `
-            <div class="product">
-              <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
-              <strong>${doc.name}</strong><br/>
-              <small>ID: ${doc.id}</small><br/>
-              <small>Score: ${doc.score?.toFixed(2)}</small>
-            </div>
-          `).join("");
-        })
-        .catch(error => {
-          resultsContainer.innerHTML = `<p>Erro ao buscar dados: ${error.message}</p>`;
+      if (allBoostsArrays.length > 0) {
+        allBoostsArrays.forEach((boostArr, idx) => {
+          quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
+          boostArr.forEach(b => {
+            quHtml += `<li>${b}</li>`;
+          });
+          quHtml += '</ul>';
         });
-    }
+      } else {
+        quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
+      }
+
+      if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
+        quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
+      } else {
+        quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
+      }
+
+      document.getElementById("query-understanding").innerHTML = quHtml;
+
+      if (docs.length === 0) {
+        resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
+        return;
+      }
+
+      resultsContainer.innerHTML = docs.map(doc => `
+        <div class="product">
+          <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
+          <strong>${doc.name}</strong><br/>
+          <small>ID: ${doc.id}</small><br/>
+          <small>Score: ${doc.score?.toFixed(2)}</small>
+        </div>
+      `).join("");
+    })
+    .catch(error => {
+      resultsContainer.innerHTML = `<p>Erro ao buscar dados: ${error.message}</p>`;
+    });
+}
+
 
     queryInput.addEventListener("input", fetchResults);
 
