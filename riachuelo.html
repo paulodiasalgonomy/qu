@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Busca Personalizada - RichRelevance</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 20%;
+      padding: 20px;
+      box-sizing: border-box;
+      border-right: 1px solid #ccc;
+      overflow-y: auto;
+    }
+
+    .main {
+      width: 80%;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      padding: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 4px;
+    }
+
+    .results {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .product {
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 200px;
+      box-sizing: border-box;
+    }
+
+    .product img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    #info {
+      margin-bottom: 20px;
+    }
+
+    #query-understanding {
+      font-size: 12px;
+      white-space: normal;
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <label>Buscar por:
+      <input type="text" id="queryInput" value="blusa" />
+    </label>
+
+    <hr style="margin: 20px 0;" />
+
+    <div id="dynamic-form"></div>
+  </div>
+
+  <div class="main">
+    <div id="info">
+      <strong id="total-results">Carregando...</strong>
+      <div id="query-understanding"></div>
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    const queryInput = document.getElementById("queryInput");
+    const resultsContainer = document.getElementById("results");
+    const apiKey = "e20fd45b1e19a8c6";
+    let searchSettings = {
+      psEnable: true,
+      psdItem: 25,
+      psdMinS: 0,
+      psdMaxS: 0.6,
+      pBal: 0.7,
+      enableMetrics: true,
+      synonymWeight: 0.5,
+      ngramSearch: false,
+      searchAttributeBoosts: [
+        "marketplace:false^10.0",
+        "seller_id:RCHLO^7.0",
+        "business_name:Lojas Riachuelo S.A.^5.0",
+        "min_grade_60:true^5.0"
+      ],
+      searchAttributeFilters: ["in_stock:true"],
+      emw: 1,
+      tie: 0.3,
+      mm: "3<50%",
+      vbp: 2.1,
+      pbp: 2.1,
+      languages: ["pt"],
+      placements: ["preview", "rr1", "discover", "find"],
+      wisdomOfCrowd: {
+        enabled: true,
+        fieldPrefix: "wocprod",
+        disbleForStarQuery: false
+      },
+      timing: false,
+      businessRule: { enabled: true },
+      globalRank: {
+        globalRankFields: {
+          nameSpace: "global_rank_prod_v2"
+        }
+      },
+      queryUnderstanding: {
+        tagging: {
+          queryEnabled: true,
+          querytagField: "querytag_name",
+          querytagPropertyField: "attribute",
+          reformulateQuery: true,
+          querytagSettings: {
+            product: {
+              properties: {
+                catalog_subclass: { boost: 4 },
+                character: { boost: 3 },
+                family: { boost: 3 },
+                product_brand: { boost: 3 },
+                catalog_class: { boost: 3 },
+                filter_color: { boost: 3 },
+                gender: { boost: 3 },
+                size: { boost: 3 },
+                hair_type: { boost: 2 },
+                lifestyle: { boost: 2 },
+                main_composition: { boost: 2 },
+                model: { boost: 2 },
+                modeling: { boost: 2 },
+                washing: { boost: 2 },
+                ocasion: { boost: 2 }
+              }
+            }
+          }
+        }
+      },
+      additiveBoost: {
+        enable: true,
+        settings: {
+          weightedUER: {
+            field: "global_rank_prod_v2$uer_30",
+            factor: "1"
+          }
+        }
+      }
+    };
+function buildFormFromSettings(obj, container, prefix = '') {
+  for (const key in obj) {
+    const value = obj[key];
+    const path = `${prefix}${key}`;
+    const id = `field-${path}`;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.marginBottom = '12px';
+
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      const groupLabel = document.createElement('div');
+      groupLabel.textContent = key;
+      groupLabel.style.fontWeight = 'bold';
+      groupLabel.style.marginTop = '10px';
+      groupLabel.style.marginBottom = '6px';
+      groupLabel.style.borderBottom = '1px solid #ccc';
+      groupLabel.style.fontSize = '14px';
+      container.appendChild(groupLabel);
+      buildFormFromSettings(value, container, `${path}.`);
+    } else {
+      const label = document.createElement('label');
+      label.htmlFor = id;
+
+      // Apenas mostra o "final" do caminho como label
+      const labelText = document.createTextNode(`${key}`);
+      label.appendChild(labelText);
+      label.style.display = 'block';
+      label.style.fontSize = '13px';
+
+      let input;
+      if (typeof value === 'boolean') {
+        input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = value;
+      } else if (typeof value === 'number') {
+        input = document.createElement('input');
+        input.type = 'number';
+        input.step = 'any';
+        input.value = value;
+      } else if (Array.isArray(value)) {
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = value.join(', ');
+      } else {
+        input = document.createElement('input');
+        input.type = 'text';
+        input.value = value;
+      }
+
+      input.id = id;
+      input.style.width = '100%';
+      input.style.boxSizing = 'border-box';
+      input.style.padding = '6px';
+      input.style.fontSize = '13px';
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      container.appendChild(wrapper);
+    }
+  }
+}
+
+// Função debounce: espera 500ms após a última digitação
+function debounce(fn, delay = 500) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// Atualiza valor profundamente em um objeto a partir do path em formato "a.b.c"
+function setNestedValue(obj, path, value) {
+  const keys = path.split('.');
+  let current = obj;
+  keys.slice(0, -1).forEach(k => {
+    if (!(k in current)) current[k] = {};
+    current = current[k];
+  });
+  current[keys[keys.length - 1]] = value;
+}
+
+// Aplica listeners recursivamente com prefixos
+function bindFormChanges(obj, prefix = '') {
+  for (const key in obj) {
+    const value = obj[key];
+    const path = `${prefix}${key}`;
+    const id = `field-${path}`;
+    const el = document.getElementById(id);
+
+    if (el) {
+      const listener = debounce(() => {
+        let newValue;
+        if (el.type === 'checkbox') {
+          newValue = el.checked;
+        } else if (el.tagName === 'INPUT' && el.type === 'number') {
+          newValue = parseFloat(el.value);
+        } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          if (Array.isArray(value)) {
+            newValue = el.value.split(',').map(s => s.trim());
+          } else {
+            newValue = el.value;
+          }
+        }
+        setNestedValue(searchSettings, path, newValue);
+        fetchResults();
+      });
+
+      el.addEventListener('input', listener);
+      el.addEventListener('change', listener);
+    }
+
+    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+      bindFormChanges(value, `${path}.`);
+    }
+  }
+}
+
+
+    function findAllBoosts(obj) {
+      let results = [];
+
+      function recurse(o) {
+        if (o && typeof o === 'object') {
+          for (const key in o) {
+            if (key === 'boost' && Array.isArray(o[key])) {
+              results.push(o[key]);
+            } else if (typeof o[key] === 'object') {
+              recurse(o[key]);
+            }
+          }
+        }
+      }
+
+      recurse(obj);
+      return results;
+    }
+
+    function fetchResults() {
+      const query = encodeURIComponent(queryInput.value);
+      const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
+
+      const url = `https://recs-va.richrelevance.com/rrserver/api/find/v1/${apiKey}?query=${query}` +
+        `&lang=pt&start=0&rows=30&placement=search_page.find&fl=name%2CimageId%2Cid%2Cscore` +
+        `&log=false` +
+        `&userId=13930081` +
+        `&rcs=eF5j4cotK8lMETA0MTTQNdQ1ZClN9jA1TjO2TDQx1U0xNkrWNTFIS9U1MDI11E2yNDM0NTM2SjNMSgMAidIN9Q` +
+        `&ssl=true&facet=false&searchConfig=${searchConfig}` +
+        `&sessionId=abc123`;
+
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const placement = data.placements?.[0] ?? {};
+          const docs = placement.docs || [];
+          const numFound = placement.numFound ?? 0;
+          const queryUnderstanding = placement.queryUnderstanding ?? {};
+
+          document.getElementById("total-results").textContent = `Produtos encontrados: ${numFound}`;
+
+          const allBoostsArrays = findAllBoosts(queryUnderstanding);
+          let quHtml = '';
+
+          if (queryUnderstanding.queryUnderstandingStage) {
+            quHtml += `<p><strong>Estágio:</strong> ${queryUnderstanding.queryUnderstandingStage}</p>`;
+          }
+
+          if (queryUnderstanding.reformulatedQuery) {
+            quHtml += `<p><strong>Reformulated Query:</strong> ${queryUnderstanding.reformulatedQuery}</p>`;
+          }
+
+          if (allBoostsArrays.length > 0) {
+            allBoostsArrays.forEach((boostArr, idx) => {
+              quHtml += `<p><strong>Boosts [${idx + 1}]:</strong></p><ul>`;
+              boostArr.forEach(b => {
+                quHtml += `<li>${b}</li>`;
+              });
+              quHtml += '</ul>';
+            });
+          } else {
+            quHtml += '<p><strong>Boosts:</strong> Nenhum</p>';
+          }
+
+          if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
+            quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' + JSON.stringify(queryUnderstanding.excludeTerms, null, 2) + '</pre>';
+          } else {
+            quHtml += '<p><strong>Exclude Terms:</strong> Nenhum</p>';
+          }
+
+          document.getElementById("query-understanding").innerHTML = quHtml;
+
+          if (docs.length === 0) {
+            resultsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
+            return;
+          }
+
+          resultsContainer.innerHTML = docs.map(doc => `
+            <div class="product">
+              <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
+              <strong>${doc.name}</strong><br/>
+              <small>ID: ${doc.id}</small><br/>
+              <small>Score: ${doc.score?.toFixed(2)}</small>
+            </div>
+          `).join("");
+        })
+        .catch(error => {
+          resultsContainer.innerHTML = `<p>Erro ao buscar dados: ${error.message}</p>`;
+        });
+    }
+
+    queryInput.addEventListener("input", fetchResults);
+
+    const dynamicForm = document.getElementById("dynamic-form");
+    buildFormFromSettings(searchSettings, dynamicForm);
+    bindFormChanges(searchSettings);
+    fetchResults();
+  </script>
+</body>
+</html>
