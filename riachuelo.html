@@ -330,7 +330,7 @@
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
               <small>ID: ${doc.id}</small><br/>
-              <small>Score: ${doc.score?.toFixed(2)}</small>
+              <small>Score: ${doc.score}</small>
             </div>
           `).join("");
         }
@@ -429,7 +429,7 @@
             <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
             <strong>${doc.name}</strong><br/>
             <small>ID: ${doc.id}</small><br/>
-            <small>Score: ${doc.score?.toFixed(2)}</small>
+            <small>Score: ${doc.score}</small>
           </div>
         `).join("");
       })
