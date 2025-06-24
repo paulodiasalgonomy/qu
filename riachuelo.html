@@ -167,10 +167,11 @@
         querytagSettings: {
           product: {
             properties: {
-              catalog_subclass: { boost: 4 },
-              product_brand: { boost: 3 },
-              filter_color: { boost: 3 },
-              gender: { boost: 3 },
+              catalog_class: { boost: 4 },
+              catalog_subclass: { boost: 3 },
+              product_brand: { boost: 2 },
+              filter_color: { boost: 2 },
+              gender: { boost: 2 },
               character: { boost: 0 },
               family: { boost: 0 },
               catalog_class: { boost: 0 },
@@ -330,7 +331,7 @@
             <div class="product">
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
-              <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id} target="_new">${doc.id}</a></small><br/>
+              <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
               <small>Score:${doc.score}</small>
             </div>
           `).join("");
@@ -429,7 +430,7 @@
           <div class="product">
             <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
             <strong>${doc.name}</strong><br/>
-            <small>ID: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_new">${doc.id}</a></small><br/>
+            <small>ID: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
             <small>${doc.score}</small>
           </div>
         `).join("");
