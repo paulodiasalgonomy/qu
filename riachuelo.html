@@ -330,8 +330,8 @@
             <div class="product">
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
-              <small>ID: ${doc.id}</small><br/>
-              <small>Score: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.score}" target="_new">${doc.score}</a></small>
+              <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id} target="_new">${doc.id}</a></small><br/>
+              <small>Score:${doc.score}</small>
             </div>
           `).join("");
         }
@@ -429,8 +429,8 @@
           <div class="product">
             <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
             <strong>${doc.name}</strong><br/>
-            <small>ID: ${doc.id}</small><br/>
-            <small><a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.score}" target="_new">${doc.score}</a></small>
+            <small>ID: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_new">${doc.id}</a></small><br/>
+            <small>${doc.score}</small>
           </div>
         `).join("");
       })
