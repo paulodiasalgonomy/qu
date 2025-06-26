@@ -160,7 +160,7 @@
     timing: false,
     businessRule: { enabled: true },
     hybridSearch:{
-      enable:true,
+      enable:false,
       languages:["pt"],
       rerank:{
           enabled:false,
@@ -292,7 +292,7 @@
     const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
 
     // 🔹 TESTE
-    const urlTest = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?query=${query}` +
+    const urlTest = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?test=test&query=${query}` +
       `&lang=pt&start=0&rows=40&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
       `&log=false&userId=${userID}` +
       `&rcs=&ssl=true&searchConfig=${searchConfig}` +
@@ -443,7 +443,7 @@
 }
 
   function fetchProductionResults(rawQuery) {
-    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=40&&facet.enabled=false&fl=name%2CimageId%2Cid%2Cscore&log=false&rcs=&ssl=true`;
+    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?prod=prod&sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=40&&facet.enabled=false&fl=name%2CimageId%2Cid&log=false&rcs=&ssl=true`;
 
     fetch(url)
       .then(res => res.json())
