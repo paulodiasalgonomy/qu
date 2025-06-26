@@ -19,14 +19,12 @@
       padding: 20px;
       box-sizing: border-box;
       border-right: 1px solid #ccc;
-      overflow-y: auto;
     }
 
     .main {
       width: 45%;
       padding: 20px;
       box-sizing: border-box;
-      overflow-y: auto;
     }
 
     input[type="text"],
@@ -38,21 +36,37 @@
       margin-top: 4px;
     }
 
-    .results,
+    #containerResults,.results,
     .resultsProduction {
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
     }
+    #containerResults{
+      word-break: break-all;
+      font-size: 0.7rem;
+      padding: 5px;
+      border: 1px solid #1d61ae;
+      background: #dfe8fb;
+      color: #3c5e83;
+    }
+    #containerProduction{
+      word-break: break-all;
+      font-size: 0.7rem;
+      padding: 5px;
+      border: 1px solid #1dae1d;
+      background: #dffbdf;
+      color: #3c8343;
+    }
     .production{
       width: 35%;
-      margin-top: 30px;
-      background: #f1f1f1;
+      margin-top: 262px;
       padding: 10px;
     }
     .production  .product {
       width: 22%;
       background: #ffffff;
+      min-height: 248px;
     }
     .product {
       border: 1px solid #ccc;
@@ -86,9 +100,13 @@
       border: 1px solid #ddd;
       max-height: 300px;
       overflow-y: auto;
+      min-height: 209px;
     }
     .production h3 {
       margin-bottom: 10px;
+    }
+    .score{
+      font-size: 1rem;;
     }
   </style>
 </head>
@@ -106,12 +124,18 @@
       <strong id="total-results">Loading...</strong>
       <div id="query-understanding"></div>
     </div>
-
-    <div class="results" id="results"></div>
+    <div id="containerResults">
+      <div class="results" id="results"></div>
+      <div id="requestResults"></div>
+    </div>
   </div>
   <div class="production">
-          <strong id="total-results-production">Loading...</strong>
-    <div class="resultsProduction" id="resultsProduction"></div>
+    <strong id="total-results-production">Loading...</strong>
+    <div id="containerProduction">
+      <div class="resultsProduction" id="resultsProduction"></div>
+      <div id="requestProduction"></div>
+    </div>
+
   </div>
 
 
@@ -293,7 +317,7 @@
         const numFound = placement.numFound ?? 0;
         const queryUnderstanding = placement.queryUnderstanding ?? {};
 
-        document.getElementById("total-results").textContent = `Results (QU): ${numFound}`;
+        document.getElementById("total-results").textContent = `Results (Test Drive): ${numFound}`;
 
         const allBoostsArrays = findAllBoosts(queryUnderstanding);
         let quHtml = '';
@@ -319,9 +343,9 @@
         }
 
         if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
-          quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' +
+          quHtml += '<p><strong>Exclude Terms:</strong></p>' +
             JSON.stringify(queryUnderstanding.excludeTerms, null, 2) +
-            '</pre>';
+            '';
         } else {
           quHtml += '<p><strong>Exclude Terms:</strong> 0</p>';
         }
@@ -330,15 +354,15 @@
         let debugHtml = '';
 
         if (debugInfo.querytag?.length) {
-          debugHtml += `<p><strong>Query Tags:</strong></p><pre>${debugInfo.querytag.join('\n')}</pre>`;
+          debugHtml += `<p><strong>Query Tags:</strong></p>${debugInfo.querytag.join('\n')}`;
         }
 
         if (debugInfo.ADDITIVE_SORT?.length) {
-          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p><pre>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}</pre>`;
+          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}`;
         }
 
         if (debugInfo.facet?.length) {
-          debugHtml += `<p><strong>Facet:</strong></p><pre>${JSON.stringify(debugInfo.facet, null, 2)}</pre>`;
+          debugHtml += `<p><strong>Facet:</strong></p>${JSON.stringify(debugInfo.facet, null, 2)}`;
         }
 
         document.getElementById("query-understanding").innerHTML = quHtml + debugHtml;
@@ -351,12 +375,14 @@
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
               <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
-              <small>Score:${doc.score}</small>
+              <small class="score">Score:${doc.score}</small>
             </div>
           `).join("");
         }
-
-        // 🔸 PRODUÇÃO
+        const containerTest = document.getElementById("requestResults");
+        const decodeURL = decodeURIComponent(urlTest);
+        containerTest.innerHTML = `<p>${decodeURL}</p>`;
+        // Chama tbm a request de PRODUÇÃO
         fetchProductionResults(rawQuery);
       })
       .catch(error => {
@@ -450,9 +476,13 @@
             <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
             <strong>${doc.name}</strong><br/>
             <small>ID: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
-            <small>${doc.score}</small>
+            <small class="score">${doc.score}</small>
           </div>
         `).join("");
+
+        const containerProduction = document.getElementById("requestProduction");
+        const decodeURL = decodeURIComponent(url);
+        containerProduction.innerHTML = `<p>${decodeURL}</p>`;
       })
       .catch(err => {
         document.getElementById("resultsProduction").innerHTML = `<p>Error on production request: ${err.message}</p>`;
