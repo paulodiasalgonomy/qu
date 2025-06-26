@@ -153,8 +153,8 @@
     pbp: 1.4,
     languages: ["pt"],
     placements: ["recs_autocomplete","sem_resultado","vitrine1","find_vitrineRecomendacao_middle","find_vitrineRecomendacao_bottom","noResults_vitrineRecomendacao_middle","noResults_vitrineRecomendacao_bottom","find","suggestions","app_vitrineRecomendacao_middle","app_vitrineRecomendacao_bottom","app_vitrineComplementar_bottom","app_noResults_vitrineRecomendacao_top","app_noResults_vitrineRecomendacao_bottom"],
-
-wisdomOfCrowd: {
+    // woc + hybrid + QU settings
+    wisdomOfCrowd: {
       enabled: true,
       fieldPrefix: "wocprod",
       disbleForStarQuery: false
@@ -169,21 +169,21 @@ wisdomOfCrowd: {
           reRankScale:null
       },
       main:{
-          queryType:"hybrid",
-          minQueryTerms:1,
-          hybrid:{
-            bool:{
-                lexical:"should",
-                vector:"should"
-            }
-          },
-          enableSpellcheck:true,
-          vector:{
-            algo:"rrVectorSimilarity",
-            minReturn:0.78,
-            minTraverse:0.74,
-            catalogField:"catalog_vector_OpenAi_1024$embeddings"
+        queryType:"hybrid",
+        minQueryTerms:1,
+        hybrid:{
+          bool:{
+              lexical:"should",
+              vector:"should"
           }
+        },
+        enableSpellcheck:true,
+        vector:{
+          algo:"rrVectorSimilarity",
+          minReturn:0.78,
+          minTraverse:0.74,
+          catalogField:"catalog_vector_OpenAi_1024$embeddings"
+        }
       }
     },
     globalRank:{
