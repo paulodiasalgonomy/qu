@@ -95,7 +95,7 @@
 <body>
   <div class="sidebar">
     <label>Search for:
-      <input type="text" id="queryInput" value="caneca de sopa" />
+      <input type="text" id="queryInput" value="jogo de panela" />
     </label>
     <hr style="margin: 20px 0;" />
     <div id="dynamic-form"></div>
@@ -124,6 +124,7 @@
 
 
   let searchSettings = {
+    // Complementary Search Configurations
     psEnable: true,
     psdItem: 48,
     psdMinS: 0.1,
@@ -152,18 +153,18 @@
     pbp: 1.4,
     languages: ["pt"],
     placements: ["recs_autocomplete","sem_resultado","vitrine1","find_vitrineRecomendacao_middle","find_vitrineRecomendacao_bottom","noResults_vitrineRecomendacao_middle","noResults_vitrineRecomendacao_bottom","find","suggestions","app_vitrineRecomendacao_middle","app_vitrineRecomendacao_bottom","app_vitrineComplementar_bottom","app_noResults_vitrineRecomendacao_top","app_noResults_vitrineRecomendacao_bottom"],
-    wisdomOfCrowd: {
+
+wisdomOfCrowd: {
       enabled: true,
       fieldPrefix: "wocprod",
       disbleForStarQuery: false
     },
-    timing: false,
     businessRule: { enabled: true },
     hybridSearch:{
       enable:false,
       languages:["pt"],
       rerank:{
-          enabled:false,
+          enabled:true,
           reRankDocs:1000,
           reRankScale:null
       },
@@ -199,11 +200,6 @@
           }
       }
     },
-    globalRank: {
-      globalRankFields: {
-        nameSpace: "global_rank_prod_v2"
-      }
-    },
     queryUnderstanding: {
       tagging: {
         queryEnabled: true,
@@ -218,15 +214,6 @@
               size: {boost:5}
             }
           }
-        }
-      }
-    },
-    additiveBoost: {
-      enable: true,
-      settings: {
-        weightedUER: {
-          field: "global_rank_prod_v2$uer_30",
-          factor: "1"
         }
       }
     }
@@ -292,7 +279,7 @@
     const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
 
     // 🔹 TESTE
-    const urlTest = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?test=test&query=${query}` +
+    const urlTest = `https://recs-rdn.richrelevance.com/rrserver/api/find/v1/${apiKey}?test=test&query=${query}` +
       `&lang=pt&start=0&rows=40&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
       `&log=false&userId=${userID}` +
       `&rcs=&ssl=true&searchConfig=${searchConfig}` +
