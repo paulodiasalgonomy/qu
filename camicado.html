@@ -395,7 +395,7 @@ window.addEventListener("load", () => {
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
               <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
-              <small class="score">Score:${doc.score}</small>
+              <small class="score">${doc.score}</small>
             </div>
           `).join("");
         }
