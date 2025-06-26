@@ -141,6 +141,20 @@
 
 <script>
   const queryInput = document.getElementById("queryInput");
+  queryInput.addEventListener("input", () => {
+    const value = encodeURIComponent(queryInput.value.trim());
+    const url = new URL(window.location);
+    if (value) {
+      url.searchParams.set("query", value);
+    } else {
+      url.searchParams.delete("query");
+    }
+    window.history.replaceState({}, "", url);
+  });
+
+
+
+
   const resultsContainer = document.getElementById("results");
   const apiKey = "077c13937e7836b7";
   const userID = crypto.randomUUID();
@@ -296,7 +310,13 @@
     return results;
   }
 
-
+window.addEventListener("load", () => {
+  const queryFromURL = getURLParam("query");
+  if (queryFromURL) {
+    queryInput.value = queryFromURL;
+  }
+  fetchResults(); // Executa a busca após carregar valor da URL
+});
   function fetchResults() {
     const rawQuery = queryInput.value;
     const query = encodeURIComponent(rawQuery);
@@ -523,7 +543,7 @@
           newValue = el.value;  
         }
         setNestedValue(searchSettings, path, newValue);
-        fetchResults();
+        //fetchResults();
       });
 
       el.addEventListener('input', listener);
@@ -542,9 +562,17 @@ function debounce(fn, delay = 10) {
     timeout = setTimeout(() => fn(...args), delay);
   };
 }
+bindFormChanges(searchSettings);
 
-  bindFormChanges(searchSettings);
+// Nova lógica onload para preencher a query via URL
+window.addEventListener("load", () => {
+  const queryFromURL = getURLParam("query");
+  if (queryFromURL) {
+    queryInput.value = queryFromURL;
+  }
   fetchResults();
+});
+//fetchResults();
 </script>
 
 </body>
