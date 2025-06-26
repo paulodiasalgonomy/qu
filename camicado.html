@@ -568,7 +568,7 @@ bindFormChanges(searchSettings);
 window.addEventListener("load", () => {
   const queryFromURL = getURLParam("query");
   if (queryFromURL) {
-    queryInput.value = queryFromURL;
+    queryInput.value =  decodeURIComponent(queryFromURL);
   }
   fetchResults();
 });
