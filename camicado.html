@@ -313,7 +313,7 @@
 window.addEventListener("load", () => {
   const queryFromURL = getURLParam("query");
   if (queryFromURL) {
-    queryInput.value = queryFromURL;
+    queryInput.value = decodeURIComponent(queryFromURL);
   }
   fetchResults(); // Executa a busca após carregar valor da URL
 });
@@ -324,7 +324,7 @@ window.addEventListener("load", () => {
 
     // 🔹 TESTE
     const urlTest = `https://recs-rdn.richrelevance.com/rrserver/api/find/v1/${apiKey}?test=test&query=${query}` +
-      `&lang=pt&start=0&rows=40&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
+      `&lang=pt&start=0&rows=50&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
       `&log=false&userId=${userID}` +
       `&rcs=&ssl=true&searchConfig=${searchConfig}` +
       `&sessionId=${sessionID}&findDebug=searchServiceDebug`;
@@ -476,7 +476,7 @@ window.addEventListener("load", () => {
 }
 
   function fetchProductionResults(rawQuery) {
-    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?prod=prod&sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=40&&facet.enabled=false&fl=name%2CimageId%2Cid&log=false&rcs=&ssl=true`;
+    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?prod=prod&sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=50&&facet.enabled=false&fl=name%2CimageId%2Cid&log=false&rcs=&ssl=true`;
 
     fetch(url)
       .then(res => res.json())
@@ -555,7 +555,7 @@ window.addEventListener("load", () => {
     }
   }
 }
-function debounce(fn, delay = 10) {
+function debounce(fn, delay = 0) {
   let timeout;
   return (...args) => {
     clearTimeout(timeout);
@@ -568,7 +568,7 @@ bindFormChanges(searchSettings);
 window.addEventListener("load", () => {
   const queryFromURL = getURLParam("query");
   if (queryFromURL) {
-    queryInput.value =  decodeURIComponent(queryFromURL);
+    queryInput.value = decodeURIComponent(queryFromURL);
   }
   fetchResults();
 });
