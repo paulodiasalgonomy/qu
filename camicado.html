@@ -213,10 +213,9 @@
         querytagSettings: {
           product: {
             properties: {
-              catalog_class: { boost: 4 },
-              catalog_subclass: { boost: 2 },
-              filter_color: { boost: 4 },
-              gender: { boost: 4 }
+              product_category_name:{ boost:10},
+              product_brand: {boost:10},
+              size: {boost:5}
             }
           }
         }
@@ -232,7 +231,6 @@
       }
     }
   };
-
 
   function getURLParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
