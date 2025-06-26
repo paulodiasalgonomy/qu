@@ -317,7 +317,7 @@
         const numFound = placement.numFound ?? 0;
         const queryUnderstanding = placement.queryUnderstanding ?? {};
 
-        document.getElementById("total-results").textContent = `Results (Test Drive): ${numFound}`;
+        document.getElementById("total-results").textContent = `Results (Test Drive) for '${rawQuery}': ${numFound}`;
 
         const allBoostsArrays = findAllBoosts(queryUnderstanding);
         let quHtml = '';
@@ -464,7 +464,7 @@
         const placement = data.placements?.[0] ?? {};
         const docs = placement.docs || [];
         const numFound = placement.numFound ?? 0;
-        document.getElementById("total-results-production").textContent = `Results (production): ${numFound}`;
+        document.getElementById("total-results-production").textContent = `Results (production) for '${rawQuery}': ${numFound}`;
         const resultsProduction = document.getElementById("resultsProduction");
         if (docs.length === 0) {
           resultsProduction.innerHTML = '<p>Zero Results.</p>';
@@ -535,7 +535,7 @@
     }
   }
 }
-function debounce(fn, delay = 500) {
+function debounce(fn, delay = 10) {
   let timeout;
   return (...args) => {
     clearTimeout(timeout);
