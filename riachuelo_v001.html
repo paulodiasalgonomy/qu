@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="https://algonomy.com/wp-content/uploads/2020/11/favicon-75x75.png" sizes="32x32" />
-  <title>QU - Riachuelo - Query Understanting Test Drive - Algonomy</title>
+  <title>QU Test Drive - RichRelevance</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,12 +19,14 @@
       padding: 20px;
       box-sizing: border-box;
       border-right: 1px solid #ccc;
+      overflow-y: auto;
     }
 
     .main {
       width: 45%;
       padding: 20px;
       box-sizing: border-box;
+      overflow-y: auto;
     }
 
     input[type="text"],
@@ -36,37 +38,21 @@
       margin-top: 4px;
     }
 
-    #containerResults,.results,
+    .results,
     .resultsProduction {
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
     }
-    #containerResults{
-      word-break: break-all;
-      font-size: 0.7rem;
-      padding: 5px;
-      border: 1px solid #1d61ae;
-      background: #dfe8fb;
-      color: #3c5e83;
-    }
-    #containerProduction{
-      word-break: break-all;
-      font-size: 0.7rem;
-      padding: 5px;
-      border: 1px solid #1dae1d;
-      background: #dffbdf;
-      color: #3c8343;
-    }
     .production{
       width: 35%;
-      margin-top: 262px;
+      margin-top: 30px;
+      background: #f1f1f1;
       padding: 10px;
     }
     .production  .product {
       width: 22%;
       background: #ffffff;
-      min-height: 248px;
     }
     .product {
       border: 1px solid #ccc;
@@ -100,20 +86,16 @@
       border: 1px solid #ddd;
       max-height: 300px;
       overflow-y: auto;
-      min-height: 209px;
     }
     .production h3 {
       margin-bottom: 10px;
-    }
-    .score{
-      font-size: 1rem;;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <label>Search for:
-      <input type="text" id="queryInput" value="vestido" />
+      <input type="text" id="queryInput" value="vestido vermelho" />
     </label>
     <hr style="margin: 20px 0;" />
     <div id="dynamic-form"></div>
@@ -124,37 +106,17 @@
       <strong id="total-results">Loading...</strong>
       <div id="query-understanding"></div>
     </div>
-    <div id="containerResults">
-      <div class="results" id="results"></div>
-      <div id="requestResults"></div>
-    </div>
+
+    <div class="results" id="results"></div>
   </div>
   <div class="production">
-    <strong id="total-results-production">Loading...</strong>
-    <div id="containerProduction">
-      <div class="resultsProduction" id="resultsProduction"></div>
-      <div id="requestProduction"></div>
-    </div>
-
+          <strong id="total-results-production">Loading...</strong>
+    <div class="resultsProduction" id="resultsProduction"></div>
   </div>
 
 
 <script>
   const queryInput = document.getElementById("queryInput");
-  queryInput.addEventListener("input", () => {
-    const value = encodeURIComponent(queryInput.value.trim());
-    const url = new URL(window.location);
-    if (value) {
-      url.searchParams.set("query", value);
-    } else {
-      url.searchParams.delete("query");
-    }
-    window.history.replaceState({}, "", url);
-  });
-
-
-
-
   const resultsContainer = document.getElementById("results");
   const apiKey = "e20fd45b1e19a8c6";
   const userID = crypto.randomUUID();
@@ -205,10 +167,10 @@
         querytagSettings: {
           product: {
             properties: {
-              catalog_class: { boost: 7 },
-              catalog_subclass: { boost: 4 },
-              filter_color: { boost: 5 },
-              gender: { boost: 5 }
+              catalog_class: { boost: 4 },
+              catalog_subclass: { boost: 2 },
+              filter_color: { boost: 4 },
+              gender: { boost: 4 }
             }
           }
         }
@@ -279,21 +241,15 @@
     return results;
   }
 
-window.addEventListener("load", () => {
-  const queryFromURL = getURLParam("query");
-  if (queryFromURL) {
-    queryInput.value = decodeURIComponent(queryFromURL);
-  }
-  fetchResults(); // Executa a busca após carregar valor da URL
-});
+
   function fetchResults() {
     const rawQuery = queryInput.value;
     const query = encodeURIComponent(rawQuery);
     const searchConfig = encodeURIComponent(JSON.stringify(searchSettings));
 
     // 🔹 TESTE
-    const urlTest = `https://recs-rdn.richrelevance.com/rrserver/api/find/v1/${apiKey}?test=test&query=${query}` +
-      `&lang=pt&start=0&rows=50&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
+    const urlTest = `https://recs-va.richrelevance.com/rrserver/api/find/v1/${apiKey}?query=${query}` +
+      `&lang=pt&start=0&rows=40&placement=search_page.find&fl=name%2CimageId%2Cid&facet.enabled=false` +
       `&log=false&userId=${userID}` +
       `&rcs=&ssl=true&searchConfig=${searchConfig}` +
       `&sessionId=${sessionID}&findDebug=searchServiceDebug`;
@@ -306,7 +262,7 @@ window.addEventListener("load", () => {
         const numFound = placement.numFound ?? 0;
         const queryUnderstanding = placement.queryUnderstanding ?? {};
 
-        document.getElementById("total-results").textContent = `Results (Test Drive) for '${rawQuery}': ${numFound}`;
+        document.getElementById("total-results").textContent = `Results (QU): ${numFound}`;
 
         const allBoostsArrays = findAllBoosts(queryUnderstanding);
         let quHtml = '';
@@ -332,9 +288,9 @@ window.addEventListener("load", () => {
         }
 
         if (queryUnderstanding.excludeTerms && Object.keys(queryUnderstanding.excludeTerms).length > 0) {
-          quHtml += '<p><strong>Exclude Terms:</strong></p>' +
+          quHtml += '<p><strong>Exclude Terms:</strong></p><pre>' +
             JSON.stringify(queryUnderstanding.excludeTerms, null, 2) +
-            '';
+            '</pre>';
         } else {
           quHtml += '<p><strong>Exclude Terms:</strong> 0</p>';
         }
@@ -343,15 +299,15 @@ window.addEventListener("load", () => {
         let debugHtml = '';
 
         if (debugInfo.querytag?.length) {
-          debugHtml += `<p><strong>Query Tags:</strong></p>${debugInfo.querytag.join('\n')}`;
+          debugHtml += `<p><strong>Query Tags:</strong></p><pre>${debugInfo.querytag.join('\n')}</pre>`;
         }
 
         if (debugInfo.ADDITIVE_SORT?.length) {
-          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}`;
+          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p><pre>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}</pre>`;
         }
 
         if (debugInfo.facet?.length) {
-          debugHtml += `<p><strong>Facet:</strong></p>${JSON.stringify(debugInfo.facet, null, 2)}`;
+          debugHtml += `<p><strong>Facet:</strong></p><pre>${JSON.stringify(debugInfo.facet, null, 2)}</pre>`;
         }
 
         document.getElementById("query-understanding").innerHTML = quHtml + debugHtml;
@@ -364,14 +320,12 @@ window.addEventListener("load", () => {
               <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
               <strong>${doc.name}</strong><br/>
               <small>ID:  <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
-              <small class="score">${doc.score}</small>
+              <small>Score:${doc.score}</small>
             </div>
           `).join("");
         }
-        const containerTest = document.getElementById("requestResults");
-        const decodeURL = decodeURIComponent(urlTest);
-        containerTest.innerHTML = `<p>${decodeURL}</p>`;
-        // Chama tbm a request de PRODUÇÃO
+
+        // 🔸 PRODUÇÃO
         fetchProductionResults(rawQuery);
       })
       .catch(error => {
@@ -445,7 +399,7 @@ window.addEventListener("load", () => {
 }
 
   function fetchProductionResults(rawQuery) {
-    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?prod=prod&sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=50&&facet.enabled=false&fl=name%2CimageId%2Cid&log=false&rcs=&ssl=true`;
+    const url = `https://recs.richrelevance.com/rrserver/api/find/v1/${apiKey}?sessionId=${sessionID}&userId=${userID}&placements=search_page.find&query=${encodeURIComponent(rawQuery)}&lang=pt&start=0&rows=40&&facet.enabled=false&fl=name%2CimageId%2Cid%2Cscore&log=false&rcs=&ssl=true`;
 
     fetch(url)
       .then(res => res.json())
@@ -453,7 +407,7 @@ window.addEventListener("load", () => {
         const placement = data.placements?.[0] ?? {};
         const docs = placement.docs || [];
         const numFound = placement.numFound ?? 0;
-        document.getElementById("total-results-production").textContent = `Results (production) for '${rawQuery}': ${numFound}`;
+        document.getElementById("total-results-production").textContent = `Results (production): ${numFound}`;
         const resultsProduction = document.getElementById("resultsProduction");
         if (docs.length === 0) {
           resultsProduction.innerHTML = '<p>Zero Results.</p>';
@@ -465,13 +419,9 @@ window.addEventListener("load", () => {
             <img src="${doc.imageId}" alt="${doc.name}" onerror="this.style.display='none'" />
             <strong>${doc.name}</strong><br/>
             <small>ID: <a href="https://portal.richrelevance.com/rrportal/catalogBrowser.jsp#product/${doc.id}" target="_blank">${doc.id}</a></small><br/>
-            <small class="score">${doc.score}</small>
+            <small>${doc.score}</small>
           </div>
         `).join("");
-
-        const containerProduction = document.getElementById("requestProduction");
-        const decodeURL = decodeURIComponent(url);
-        containerProduction.innerHTML = `<p>${decodeURL}</p>`;
       })
       .catch(err => {
         document.getElementById("resultsProduction").innerHTML = `<p>Error on production request: ${err.message}</p>`;
@@ -524,24 +474,16 @@ window.addEventListener("load", () => {
     }
   }
 }
-function debounce(fn, delay = 3000) {
+function debounce(fn, delay = 500) {
   let timeout;
   return (...args) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn(...args), delay);
   };
 }
-bindFormChanges(searchSettings);
 
-// Nova lógica onload para preencher a query via URL
-window.addEventListener("load", () => {
-  const queryFromURL = getURLParam("query");
-  if (queryFromURL) {
-    queryInput.value = decodeURIComponent(queryFromURL);
-  }
+  bindFormChanges(searchSettings);
   fetchResults();
-});
-//fetchResults();
 </script>
 
 </body>
