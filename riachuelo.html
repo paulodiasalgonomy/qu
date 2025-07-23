@@ -205,22 +205,23 @@ if (urlConfig) {
 }
 
 
-  function findAllBoosts(obj) {
-    let results = [];
-    function recurse(o) {
-      if (o && typeof o === 'object') {
-        for (const key in o) {
-          if (key === 'boost' && Array.isArray(o[key])) {
-            results.push(o[key]);
-          } else if (typeof o[key] === 'object') {
-            recurse(o[key]);
-          }
+function findAllBoosts(obj) {
+  let results = [];
+  function recurse(o) {
+    if (o && typeof o === 'object') {
+      for (const key in o) {
+        if (key === 'boost' && (typeof o[key] === 'number' || typeof o[key] === 'string')) {
+          results.push(o[key]);
+        } else if (typeof o[key] === 'object') {
+          recurse(o[key]);
         }
       }
     }
-    recurse(obj);
-    return results;
   }
+  recurse(obj);
+  return results;
+}
+
 
 window.addEventListener("load", () => {
   const queryFromURL = getURLParam("query");
@@ -290,7 +291,7 @@ window.addEventListener("load", () => {
         }
 
         if (debugInfo.ADDITIVE_SORT?.length) {
-          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}`;
+          debugHtml += `<p><strong>ADDITIVE_SORT:</strong></p><pre>${JSON.stringify(debugInfo.ADDITIVE_SORT, null, 2)}</pre>`;
         }
 
         if (debugInfo.facet?.length) {
