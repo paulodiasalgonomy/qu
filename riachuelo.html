@@ -297,7 +297,7 @@ window.addEventListener("load", () => {
         if (debugInfo.facet?.length) {
           debugHtml += `<p><strong>Facet:</strong></p>${JSON.stringify(debugInfo.facet, null, 2)}`;
         }
-        
+
         if (debugInfo.hybridSearch) {
           debugHtml += `<p><strong>Hybrid Search Debug:</strong></p>`;
           debugHtml += `<pre>${JSON.stringify(debugInfo.hybridSearch, null, 2)}</pre>`;
@@ -324,7 +324,7 @@ window.addEventListener("load", () => {
         `;
         document.getElementById("copy-url-button").addEventListener("click", () => {
           navigator.clipboard.writeText(urlTest).then(() => {
-            alert("URL copiada com sucesso!");
+            console.log("URL copiada com sucesso!");
           }).catch(err => {
             alert("Erro ao copiar URL: " + err);
           });
