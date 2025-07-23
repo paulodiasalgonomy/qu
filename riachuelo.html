@@ -297,7 +297,11 @@ window.addEventListener("load", () => {
         if (debugInfo.facet?.length) {
           debugHtml += `<p><strong>Facet:</strong></p>${JSON.stringify(debugInfo.facet, null, 2)}`;
         }
-
+        
+        if (debugInfo.hybridSearch) {
+          debugHtml += `<p><strong>Hybrid Search Debug:</strong></p>`;
+          debugHtml += `<pre>${JSON.stringify(debugInfo.hybridSearch, null, 2)}</pre>`;
+        }
         document.getElementById("query-understanding").innerHTML = quHtml + debugHtml;
 
         if (docs.length === 0) {
@@ -314,7 +318,18 @@ window.addEventListener("load", () => {
         }
         const containerTest = document.getElementById("requestResults");
         const decodeURL = decodeURIComponent(urlTest);
-        containerTest.innerHTML = `<p>${decodeURL}</p>`;
+        containerTest.innerHTML = `
+          <p id="url-display" style="word-break: break-all;">${decodeURL}</p>
+          <button id="copy-url-button">📋 Copiar URL válida</button>
+        `;
+        document.getElementById("copy-url-button").addEventListener("click", () => {
+          navigator.clipboard.writeText(urlTest).then(() => {
+            alert("URL copiada com sucesso!");
+          }).catch(err => {
+            alert("Erro ao copiar URL: " + err);
+          });
+        });
+
         // Chama tbm a request de PRODUÇÃO
         fetchProductionResults(rawQuery);
       })
