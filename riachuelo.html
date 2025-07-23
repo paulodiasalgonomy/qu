@@ -159,71 +159,9 @@
   const apiKey = "e20fd45b1e19a8c6";
   const userID = crypto.randomUUID();
   const sessionID = crypto.getRandomValues(new Uint32Array(2)).join('s');
+  let complementaryJSONConfig = `{"psEnable":true,"psdItem":25,"psdMinS":0,"psdMaxS":0.6,"pBal":0.7,"enableMetrics":true,"synonymWeight":0.5,"ngramSearch":false,"searchAttributeBoosts":["marketplace:false^10.0","seller_id:RCHLO^7.0","business_name:Lojas Riachuelo S.A.^5.0","min_grade_60:true^5.0"],"searchAttributeFilters":["in_stock:true"],"emw":1,"tie":0.3,"mm":"3<50%","vbp":2.1,"pbp":2.1,"languages":["pt"],"placements":["preview","rr1","discover","find"],"wisdomOfCrowd":{"enabled":true,"fieldPrefix":"wocprod","disbleForStarQuery":false},"timing":false,"businessRule":{"enabled":true},"globalRank":{"globalRankFields":{"nameSpace":"global_rank_prod_v2"}},"additiveBoost":{"enable":true,"settings":{"weightedUER":{"field":"global_rank_prod_v2$uer_30","factor":"1"}}},"queryUnderstanding":{"tagging":{"queryEnabled":true,"querytagField":"querytag_name","querytagPropertyField":"attribute","reformulateQuery":false,"querytagSettings":{"product":{"properties":{"catalog_subclass":{"boost":4},"catalog_class":{"boost":7},"filter_color":{"boost":5},"gender":{"boost":5}}}}}},"hybridSearch":{"enable":true,"rerank":{"enabled":true,"reRankDocs":30,"reRankScale":null},"languages":["pt"],"main":{"queryType":"hybrid","minQueryTerms":1,"minQueryLength":3,"hybrid":{"bool":{"lexical":"should","vector":"should"}},"enableSpellcheck":true,"vector":{"algo":"rrKnn","topK":30,"minReturn":0.74,"minTraverse":0.72,"catalogField":"catalog_vector_OpenAi_1024$embeddings","dimension":1024}}},"synonymParams":{"synonyms.disable.on.max.boolean.clause":true}}`;
 
-
-  let searchSettings = {
-    psEnable: true,
-    psdItem: 25,
-    psdMinS: 0,
-    psdMaxS: 0.6,
-    pBal: 0.7,
-    enableMetrics: true,
-    synonymWeight: 0.5,
-    ngramSearch: false,
-    searchAttributeBoosts: [
-      "marketplace:false^10.0",
-      "seller_id:RCHLO^7.0",
-      "business_name:Lojas Riachuelo S.A.^5.0",
-      "min_grade_60:true^5.0"
-    ],
-    searchAttributeFilters: ["in_stock:true"],
-    emw: 1,
-    tie: 0.3,
-    mm: "3<50%",
-    vbp: 2.1,
-    pbp: 2.1,
-    languages: ["pt"],
-    placements: ["preview", "rr1", "discover", "find"],
-    wisdomOfCrowd: {
-      enabled: true,
-      fieldPrefix: "wocprod",
-      disbleForStarQuery: false
-    },
-    timing: false,
-    businessRule: { enabled: true },
-    globalRank: {
-      globalRankFields: {
-        nameSpace: "global_rank_prod_v2"
-      }
-    },
-    queryUnderstanding: {
-      tagging: {
-        queryEnabled: true,
-        querytagField: "querytag_name",
-        querytagPropertyField: "attribute",
-        reformulateQuery: false,
-        querytagSettings: {
-          product: {
-            properties: {
-              catalog_class: { boost: 7 },
-              catalog_subclass: { boost: 4 },
-              filter_color: { boost: 5 },
-              gender: { boost: 5 }
-            }
-          }
-        }
-      }
-    },
-    additiveBoost: {
-      enable: true,
-      settings: {
-        weightedUER: {
-          field: "global_rank_prod_v2$uer_30",
-          factor: "1"
-        }
-      }
-    }
-  };
+  let searchSettings = {};
 
 
   function getURLParam(param) {
@@ -240,6 +178,7 @@
     }
   }
 
+
   function mergeDeep(target, source) {
     for (const key in source) {
       if (source[key] instanceof Object && key in target) {
@@ -251,16 +190,20 @@
     return target;
   }
 
-  const configFromURL = getURLParam("config");
-  const complementaryConfig = safeParseJSON(configFromURL) || {
-    queryUnderstanding: {
-      tagging: {
-        reformulateQuery: false
-      }
-    }
-  };
+
+
+const complementaryConfig = JSON.parse(complementaryJSONConfig);
+mergeDeep(searchSettings, complementaryConfig);
+
+const configFromURL = getURLParam("config");
+const urlConfig = safeParseJSON(configFromURL);
+
 
   mergeDeep(searchSettings, complementaryConfig);
+if (urlConfig) {
+  mergeDeep(searchSettings, urlConfig);
+}
+
 
   function findAllBoosts(obj) {
     let results = [];
